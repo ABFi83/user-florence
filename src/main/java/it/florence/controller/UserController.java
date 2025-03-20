@@ -3,6 +3,7 @@ package it.florence.controller;
 
 import it.florence.dto.UserRequest;
 import it.florence.dto.UserResponse;
+import it.florence.model.User;
 import it.florence.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,5 +65,16 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @PostMapping("/import")
+    public ResponseEntity<String> importUsersFromCSV(@RequestParam("file") MultipartFile file) {
+        try {
+            List<User> users = userService.importUsersFromCSV(file);
+            return ResponseEntity.ok("File CSV importato correttamente, " + users.size() + " utenti aggiunti.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Errore nell'importazione del file CSV: " + e.getMessage());
+        }
     }
 }
