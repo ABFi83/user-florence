@@ -12,6 +12,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -118,5 +123,29 @@ public class UserServiceTest {
 
         verify(userRepository, times(1)).findById(1L);
         verify(userRepository, times(1)).save(Mockito.any(User.class));
+    }
+
+    @Test
+    void testImportUsersFromCSV() throws Exception {
+        String csvContent = "nome,cognome,email,indirizzo,dataNascita\n" +
+                "Mario,Rossi,mario.rossi@example.com,Via Roma,1990-01-01\n" +
+                "Luigi,Bianchi,luigi.bianchi@example.com,Via Milano,1992-02-02";
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+        MultipartFile file = new MockMultipartFile("file", "users.csv", "text/csv", inputStream);
+
+        User user1 = new User(null, "Mario", "Rossi", "mario.rossi@example.com", "Via Roma", LocalDate.of(1990, 1, 1));
+        User user2 = new User(null, "Luigi", "Bianchi", "luigi.bianchi@example.com", "Via Milano", LocalDate.of(1992, 2, 2));
+        when(userRepository.saveAll(Mockito.anyList())).thenReturn(List.of(user1, user2));
+
+         List<User> importedUsers = userService.importUsersFromCSV(file);
+
+        assertEquals(2, importedUsers.size());
+        assertEquals("Mario", importedUsers.get(0).getNome());
+        assertEquals("Luigi", importedUsers.get(1).getNome());
+        assertEquals(LocalDate.of(1990, 1, 1), importedUsers.get(0).getDataNascita());
+        assertEquals(LocalDate.of(1992, 2, 2), importedUsers.get(1).getDataNascita());
+
+        verify(userRepository, times(1)).saveAll(Mockito.anyList());
     }
 }

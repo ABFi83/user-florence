@@ -53,6 +53,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>5.7.1</version> <!-- Usa l'ultima versione disponibile -->
+    </dependency>
+
+
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>

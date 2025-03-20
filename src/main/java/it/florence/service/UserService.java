@@ -1,5 +1,7 @@
 package it.florence.service;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 import it.florence.dto.UserRequest;
 import it.florence.dto.UserResponse;
 import it.florence.model.User;
@@ -8,7 +10,11 @@ import it.florence.specification.UserSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,5 +81,28 @@ public class UserService {
             User updatedUser = userRepository.save(existingUser);
             return convertToResponse(updatedUser);
         });
+    }
+
+    public List<User> importUsersFromCSV(MultipartFile file) throws IOException {
+        List<User> users = new ArrayList<>();
+        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
+            String[] nextLine;
+            boolean headerSkipped = false;
+            while ((nextLine = csvReader.readNext()) != null) {
+                if (!headerSkipped) {
+                    headerSkipped = true;
+                    continue;
+                }
+                User user = new User();
+                user.setNome(nextLine[0]);
+                user.setCognome(nextLine[1]);
+                user.setEmail(nextLine[2]);
+                user.setIndirizzo(nextLine[3]);
+                user.setDataNascita(java.time.LocalDate.parse(nextLine[4]));                 users.add(user);
+            }
+        } catch (CsvValidationException e) {
+            throw new RuntimeException(e);
+        }
+        return userRepository.saveAll(users);
     }
 }

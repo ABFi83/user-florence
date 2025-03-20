@@ -3,18 +3,28 @@ package it.florence.controller;
 import it.florence.dto.UserRequest;
 import it.florence.repository.UserRepository;
 import it.florence.model.User;
+import it.florence.specification.UserSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.time.LocalDate;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -51,10 +61,10 @@ public class UserControllerIntegrationTest {
                                                       "\"dataNascita\": \"1990-01-01\"\n" +
                                                       "}"))
                .andExpect(status().isOk())
-               .andExpect(MockMvcResultMatchers.jsonPath("$.nome").value("Mario"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.cognome").value("Rossi"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("mario.rossi@example.com"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.indirizzo").value("Via Roma"));
+               .andExpect(jsonPath("$.nome").value("Mario"))
+               .andExpect(jsonPath("$.cognome").value("Rossi"))
+               .andExpect(jsonPath("$.email").value("mario.rossi@example.com"))
+               .andExpect(jsonPath("$.indirizzo").value("Via Roma"));
     }
 
     @Test
@@ -64,10 +74,10 @@ public class UserControllerIntegrationTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/users/{id}", savedUser.getId()))
                .andExpect(status().isOk())
-               .andExpect(MockMvcResultMatchers.jsonPath("$.nome").value("Mario"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.cognome").value("Rossi"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("mario.rossi@example.com"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.indirizzo").value("Via Roma"));
+               .andExpect(jsonPath("$.nome").value("Mario"))
+               .andExpect(jsonPath("$.cognome").value("Rossi"))
+               .andExpect(jsonPath("$.email").value("mario.rossi@example.com"))
+               .andExpect(jsonPath("$.indirizzo").value("Via Roma"));
     }
 
     @Test
@@ -86,10 +96,10 @@ public class UserControllerIntegrationTest {
                                                       "\"dataNascita\": \"1992-02-02\"\n" +
                                                       "}"))
                .andExpect(status().isOk())
-               .andExpect(MockMvcResultMatchers.jsonPath("$.nome").value("Luigi"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.cognome").value("Bianchi"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("luigi.bianchi@example.com"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.indirizzo").value("Via Milano"));
+               .andExpect(jsonPath("$.nome").value("Luigi"))
+               .andExpect(jsonPath("$.cognome").value("Bianchi"))
+               .andExpect(jsonPath("$.email").value("luigi.bianchi@example.com"))
+               .andExpect(jsonPath("$.indirizzo").value("Via Milano"));
     }
 
     @Test
@@ -110,7 +120,34 @@ public class UserControllerIntegrationTest {
         userRepository.save(user2);
         mockMvc.perform(MockMvcRequestBuilders.get("/api/users"))
                .andExpect(status().isOk())
-               .andExpect(MockMvcResultMatchers.jsonPath("$[0].nome").value("Mario"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$[1].nome").value("Luigi"));
+               .andExpect(jsonPath("$[0].nome").value("Mario"))
+               .andExpect(jsonPath("$[1].nome").value("Luigi"));
+    }
+
+    @Test
+    void testImportUsersFromCSV() throws Exception {
+        String csvContent = "nome,cognome,email,indirizzo,dataNascita\n" +
+                "Mario,Rossi,mario.rossi@example.com,Via Roma,1990-01-01\n" +
+                "Luigi,Bianchi,luigi.bianchi@example.com,Via Milano,1992-02-02";
+
+        InputStream inputStream = new ByteArrayInputStream(csvContent.getBytes());
+
+        MockMultipartFile file = new MockMultipartFile("file", "users.csv", "text/csv", inputStream);
+
+        mockMvc.perform(multipart("/api/users/import")
+                       .file(file))
+               .andExpect(status().isOk())
+               .andExpect(content().string("File CSV importato correttamente, 2 utenti aggiunti."));
+
+
+        assertEquals(2, userRepository.count());
+
+        Specification<User> spec = UserSpecification.filterBy("Mario", "Rossi");
+        User user1 = userRepository.findAll(spec).get(0);
+        spec = UserSpecification.filterBy("Luigi", "Bianchi");
+        User user2 = userRepository.findAll(spec).get(0);
+
+        assertEquals("Mario", user1.getNome());
+        assertEquals("Luigi", user2.getNome());
     }
 }
