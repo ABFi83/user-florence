@@ -1,0 +1,82 @@
+# Ignore generated Idea files
+
+/*/*/*.iml
+*.iml
+/*/*.iml
+/*/.settings
+/*/.project
+/*/.classpath
+/*/target
+/.idea
+/*/.gitignore
+/*/.idea
+/*.class
+/*/*/.settings
+/*/*/.project
+/*/*/.classpath
+/*/*/target
+/*/.gitignore
+./logs/*
+.metadata/
+Configuration Manager/
+RemoteConfigurationFiles/
+RemoteSystemsTempFiles/
+clientdb.xml
+project/
+idea
+
+#ignore eclipse files
+/.classpath
+/.project
+/.settings/
+
+
+# Maven build
+target
+
+# Temp Dir for test
+USER
+
+
+
+.metadata/
+Configuration Manager/
+RemoteConfigurationFiles/
+RemoteSystemsTempFiles/
+clientdb.xml
+project/
+
+CRE*
+filename_IS_UNDEFINED
+
+
+.metadata/
+.recommenders/
+RemoteSystemsTempFiles/
+
+
+
+
+.metadata/
+.recommenders/
+RemoteSystemsTempFiles/
+
+
+# files for test
+*/*/files
+
+BJFDConfig.xml
+BJFDbackup.xml
+DTCNProfiles.xml
+DTCNProfiles_backup.xml
+DTSPProfiles.xml
+DTSPProfiles_backup.xml
+dtcc/
+parser/
+
+*.jar
+
+*.original
+.factorypath
+
+/logs/
