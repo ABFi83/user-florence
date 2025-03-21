@@ -39,7 +39,7 @@ Once the application is running, the API will be exposed at `http://localhost:80
 - `POST /api/users` - Create a new user
 - `PUT /api/users/{id}` - Update an existing user
 - `DELETE /api/users/{id}` - Delete a user
-- `IMPORT /api/users/{id}` - Import users
+- `IMPORT /api/users/import` - Import users
 
 ## Swagger UI:
 Once the application is running, you can access the Swagger UI to explore and test the API at:
