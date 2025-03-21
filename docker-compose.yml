@@ -1,38 +1,27 @@
-version: '3.8'
-
+version: "3.8"
 services:
-  java-app:
+  app:
     build: .
-    container_name: java-app
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mydb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: test
-    networks:
-      - mynetwork
 
-  postgres:
-    image: postgres:latest
-    container_name: postgres-db
+  db:
+    image: postgres:15
+    restart: always
     environment:
+      POSTGRES_DB: mydb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: test
-      POSTGRES_DB: mydb
     ports:
-      - "5432:5432"  # Espone la porta PostgreSQL
-    networks:
-      - mynetwork
+      - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-networks:
-  mynetwork:
-    driver: bridge
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
-  postgres-data:
-    driver: local
+  pgdata:
