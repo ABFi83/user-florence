@@ -24,8 +24,6 @@ public class UserService {
     @Autowired
     private  UserRepository userRepository;
 
-
-
     //TODO CREARE UN MAPPER
     private UserResponse convertToResponse(User user) {
         return new UserResponse(
@@ -39,11 +37,8 @@ public class UserService {
     }
 
     public List<UserResponse> getAllUsers(String nome, String cognome) {
-
-
         Specification<User> spec = UserSpecification.filterBy(nome, cognome);
         List<User> users = userRepository.findAll(spec);
-
         return users.stream()
                     .map(this::convertToResponse)
                     .toList();
@@ -98,7 +93,8 @@ public class UserService {
                 user.setCognome(nextLine[1]);
                 user.setEmail(nextLine[2]);
                 user.setIndirizzo(nextLine[3]);
-                user.setDataNascita(java.time.LocalDate.parse(nextLine[4]));                 users.add(user);
+                user.setDataNascita(java.time.LocalDate.parse(nextLine[4]));
+                users.add(user);
             }
         } catch (CsvValidationException e) {
             throw new RuntimeException(e);
