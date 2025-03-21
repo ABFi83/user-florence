@@ -31,8 +31,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-
-
     @GetMapping
     public List<UserResponse> getAllUsers(
             @RequestParam(name = "nome", required = false) String nome,
